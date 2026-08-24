@@ -1,4 +1,4 @@
-export default function initHeroTracker() {
+export default function initHeroTracker(mouseMoveTexts) {
   const hero = document.querySelector(".js-hero");
   const mouse = {
     x: 0,
@@ -69,6 +69,8 @@ export default function initHeroTracker() {
     function (event) {
       mouse.x = event.clientX;
       mouse.y = event.clientY;
+
+      mouseMoveTexts(event, hero);
 
       divVertical.style.left = event.clientX + "px";
       divHorizontal.style.top = event.clientY + "px";

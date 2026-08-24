@@ -1,5 +1,7 @@
 import initHeroTracker from './events.js';
-initHeroTracker();
+import mouseMoveTexts from './mouseMoveTexts.js';
+
+initHeroTracker(mouseMoveTexts);
 
 function setCanvasFavicon() {
   const canvas = document.createElement("canvas");
