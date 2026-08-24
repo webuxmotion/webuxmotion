@@ -23,6 +23,7 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
+  overflow: hidden;
 }
 
 .hero h1 {
