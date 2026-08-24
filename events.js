@@ -1,4 +1,4 @@
-export default function initHeroTracker(mouseMoveTexts) {
+export default function initHeroTracker(mouseMoveTexts, keysEvents) {
   const hero = document.querySelector(".js-hero");
   const mouse = {
     x: 0,
@@ -6,6 +6,8 @@ export default function initHeroTracker(mouseMoveTexts) {
   };
 
   if (!hero) return;
+
+  keysEvents(hero);
 
   const xPosText = document.createElement("p");
   xPosText.style.position = "absolute";

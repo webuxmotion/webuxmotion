@@ -13,6 +13,7 @@ export default function mouseMoveTexts(event, hero) {
     el.style.top = event.clientY + 'px';
     el.style.left = event.clientX + 'px';
     el.textContent = item.text;
+    el.style.color = "#ffffff";
     hero.prepend(el);
 
     texts.push(el);
