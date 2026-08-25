@@ -10,8 +10,13 @@ window.onload = function () {
   arrow.x = canvas.width / 2;
   arrow.y = canvas.height / 2;
 
+  // Ви можете змінити радіус фаски тут (0 - гострі кути, більше значення - кругліші)
+
   const bgImage = new Image();
   bgImage.src = "./image.png";
+
+  // Розраховуємо точки один раз при старті
+  arrow.setPoints();
 
   (function drawFrame() {
     window.requestAnimationFrame(drawFrame);
@@ -20,9 +25,7 @@ window.onload = function () {
     if (bgImage.complete) {
       ctx.save();           
       ctx.globalAlpha = 0.3; 
-      
       ctx.drawImage(bgImage, 180, 165, bgImage.width / 3.7, bgImage.height / 3.7); 
-      
       ctx.restore();        
     }
 
@@ -35,7 +38,6 @@ window.onload = function () {
       arrow.rotation = arrow.degToRad(-30);
     }
 
-    arrow.setPoints();
     arrow.draw(ctx);
   })();
 };
