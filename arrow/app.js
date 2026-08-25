@@ -13,17 +13,17 @@ window.onload = function () {
   const bgImage = new Image();
   bgImage.src = "./image.png";
 
+  arrow.setPoints();
+
   (function drawFrame() {
     window.requestAnimationFrame(drawFrame);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (bgImage.complete) {
-      ctx.save();           
-      ctx.globalAlpha = 0.3; 
-      
-      ctx.drawImage(bgImage, 180, 165, bgImage.width / 3.7, bgImage.height / 3.7); 
-      
-      ctx.restore();        
+      ctx.save();
+      ctx.globalAlpha = 0.3;
+      //ctx.drawImage(bgImage, 180, 165, bgImage.width / 3.7, bgImage.height / 3.7);
+      ctx.restore();
     }
 
     const dx = mouse.x - arrow.x;
@@ -35,7 +35,6 @@ window.onload = function () {
       arrow.rotation = arrow.degToRad(-30);
     }
 
-    arrow.setPoints();
     arrow.draw(ctx);
   })();
 };

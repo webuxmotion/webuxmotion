@@ -51,17 +51,23 @@ export default class Arrow {
   }
 
   setPathByPoints(ctx, points) {
+    const len = points.length;
+    if (len < 3) return;
+
     ctx.beginPath();
 
-    points.forEach((point, index) => {
-      if (index == 0) {
-        ctx.moveTo(point.x, point.y);
-      } else {
-        ctx.lineTo(point.x, point.y);
-      }
-    });
+    for (let i = 0; i < len; i++) {
+      const pStart = points[(i - 1 + len) % len];
+      const pCorner = points[i];                  
+      const pNext = points[(i + 1) % len];        
 
-    ctx.lineTo(points[0].x, points[0].y);
+      if (i === 0) {
+        ctx.moveTo(pCorner.x, pCorner.y);
+      } else {
+        ctx.lineTo(pCorner.x, pCorner.y);
+      }
+    }
+
     ctx.closePath();
   }
 
