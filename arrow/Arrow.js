@@ -5,10 +5,10 @@ export default class Arrow {
     this.strokeStyle = "#ffffff";
     this.rotation = 0;
     this.params = {
-      radius: 100,
+      radius: 200,
       bigAngle: 137,
       oppositePointAngle: 180,
-      rotationAngle: -30,
+      rotationAngle: 0,
       smallRadius: null
     };
     this.params.smallRadius = this.params.radius / 2.2;
