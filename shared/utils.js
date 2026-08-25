@@ -11,6 +11,10 @@ const utils = {
     });
 
     return mouse;
+  },
+
+  degToRad: (deg) => {
+    return Math.PI / 180 * deg;
   }
 };
 
