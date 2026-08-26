@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Angle Finder 3-Points",
+  "version": "1.1",
+  "description": "Міряє кут між 3 точками на будь-якій сторінці за допомогою Canvas",
+  "permissions": ["activeTab", "scripting"],
+  "action": {},
+  "background": {
+    "service_worker": "background.js"
+  }
+}
