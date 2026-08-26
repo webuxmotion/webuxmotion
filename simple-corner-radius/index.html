@@ -15,7 +15,11 @@
   </head>
   <body>
     <canvas id="canvas" width="500" height="500"></canvas>
-
+    <div style="margin-bottom: 10px; font-family: sans-serif">
+      <label for="radius-slider">Радіус закруглення: </label>
+      <input type="range" id="radius-slider" min="5" max="150" value="40" />
+      <span id="radius-value">40px</span>
+    </div>
     <script src="./app.js"></script>
   </body>
 </html>

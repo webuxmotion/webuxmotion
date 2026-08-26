@@ -16,8 +16,6 @@ function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.font = "30px sans-serif";
-  ctx.strokeStyle = "black";
-  ctx.fillStyle = "black";
   ctx.lineWidth = 1;
 
   // 1. Малюємо трикутник (лінії)
@@ -41,9 +39,15 @@ function draw() {
   });
 
   // 3. Рахуємо кути та бісектрису
-  const angleAB = Math.atan2(points[0].y - points[1].y, points[0].x - points[1].x);
-  const angleBC = Math.atan2(points[2].y - points[1].y, points[2].x - points[1].x);
-  
+  const angleAB = Math.atan2(
+    points[0].y - points[1].y,
+    points[0].x - points[1].x,
+  );
+  const angleBC = Math.atan2(
+    points[2].y - points[1].y,
+    points[2].x - points[1].x,
+  );
+
   let diff = angleBC - angleAB;
   let normalized = Math.atan2(Math.sin(diff), Math.cos(diff));
 
@@ -52,16 +56,129 @@ function draw() {
   bisectorAngle = Math.atan2(Math.sin(bisectorAngle), Math.cos(bisectorAngle));
 
   // 4. Малюємо бісектрису
-  const length = 300; 
+  const length = 300;
   const bisectorX = points[1].x + Math.cos(bisectorAngle) * length;
   const bisectorY = points[1].y + Math.sin(bisectorAngle) * length;
 
   ctx.beginPath();
   ctx.moveTo(points[1].x, points[1].y);
   ctx.lineTo(bisectorX, bisectorY);
-  ctx.setLineDash([5, 5]); 
+  ctx.setLineDash([5, 5]);
   ctx.stroke();
-  ctx.setLineDash([]); 
+  ctx.setLineDash([]);
+
+  // --- 5. НОВИЙ БЛОК: Розрахунок та малювання вписаного кола пунктиром ---
+  const circleRadius = 40; // Задаємо бажаний радіус кола
+
+  // Рахуємо половину внутрішнього кута
+  const halfAngle = Math.abs(normalized / 2);
+
+  // Знаходимо гіпотенузу — відстань від точки B до центру кола
+  // Використовуємо Math.max, щоб уникнути ділення на нуль, якщо кут стане рівним 0°
+  const distanceToCenter = circleRadius / Math.sin(Math.max(halfAngle, 0.001));
+
+  // Обчислюємо точні координати центру кола на бісектрисі
+  const circleX = points[1].x + Math.cos(bisectorAngle) * distanceToCenter;
+  const circleY = points[1].y + Math.sin(bisectorAngle) * distanceToCenter;
+
+  ctx.beginPath();
+  ctx.arc(circleX, circleY, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Малюємо коло пунктиром
+  ctx.beginPath();
+  ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]); // Пунктир
+  ctx.stroke();
+  ctx.setLineDash([]); // Скидаємо пунктир
+
+  // --- ДОДАТКОВО: Розрахунок та малювання точок дотику ---
+
+  // Відстань від точки B до точок дотику вздовж сторін кута
+  const distanceToTangent = circleRadius / Math.tan(Math.max(halfAngle, 0.001));
+
+  // Точка дотику на лінії BA
+  const tangentAX = points[1].x + Math.cos(angleAB) * distanceToTangent;
+  const tangentAY = points[1].y + Math.sin(angleAB) * distanceToTangent;
+
+  // Точка дотику на лінії BC
+  const tangentCX = points[1].x + Math.cos(angleBC) * distanceToTangent;
+  const tangentCY = points[1].y + Math.sin(angleBC) * distanceToTangent;
+
+  // Малюємо першу точку дотику (наприклад, червону або синю)
+  ctx.beginPath();
+  ctx.arc(tangentAX, tangentAY, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Малюємо другу точку дотику
+  ctx.beginPath();
+  ctx.arc(tangentCX, tangentCY, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // --- ДОДАТКОВО: Малювання радіусів до точок дотику ---
+  ctx.beginPath();
+  // Лінія до першої точки дотику (на стороні BA)
+  ctx.moveTo(circleX, circleY);
+  ctx.lineTo(tangentAX, tangentAY);
+
+  // Лінія до другої точки дотику (на стороні BC)
+  ctx.moveTo(circleX, circleY);
+  ctx.lineTo(tangentCX, tangentCY);
+
+  ctx.lineWidth = 1;
+  ctx.setLineDash([2, 3]); // Дрібний пунктир для радіусів, щоб відрізнявся від бісектриси
+  ctx.stroke();
+  ctx.setLineDash([]); // Скидаємо пунктир
+
+    // --- ДОДАТКОВО: Побудова закруглення з 5 лінійних сегментів (БЕЗ БАГІВ) ---
+  
+  const startAngle = Math.atan2(tangentAY - circleY, tangentAX - circleX);
+  const endAngle = Math.atan2(tangentCY - circleY, tangentCX - circleX);
+
+  let angleDiff = endAngle - startAngle;
+  angleDiff = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
+
+  const segmentsCount = 5; 
+  const pointsCount = segmentsCount + 1; 
+
+  // Створюємо масив для збереження точок, щоб не ламати шлях під час циклу
+  const arcPoints = [];
+
+  for (let i = 0; i < pointsCount; i++) {
+    const currentAngle = startAngle + angleDiff * (i / segmentsCount);
+    const x = circleX + Math.cos(currentAngle) * circleRadius;
+    const y = circleY + Math.sin(currentAngle) * circleRadius;
+    arcPoints.push({ x, y });
+  }
+
+  // 1. Спочатку малюємо ТІЛЬКИ ЖИРНУ ЛІНІЮ
+  ctx.beginPath();
+  arcPoints.forEach((p, i) => {
+    if (i === 0) {
+      ctx.moveTo(p.x, p.y);
+    } else {
+      ctx.lineTo(p.x, p.y);
+    }
+  });
+
+  ctx.lineWidth = 4;         // Робимо лінію жирною
+  ctx.strokeStyle = "blue";   // Задаємо синій (або будь-який яскравий) колір
+  ctx.lineCap = "round";      // Згладжуємо кути з'єднань відрізків
+  ctx.stroke();
+
+  // 2. І тільки тепер малюємо КРАПКИ ПОВЕРХ лінії
+  ctx.fillStyle = "black";    // Колір для крапок
+  arcPoints.forEach((p) => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Скидаємо стилі назад до стандартних чорних
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "black";
+  ctx.fillStyle = "black";
 }
 
 // --- ОБРОБКА ПОДІЙ МИШІ ---
