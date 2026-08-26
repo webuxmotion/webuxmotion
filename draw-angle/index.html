@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>draw-angle</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: sans-serif;
+        margin-top: 20px;
+      }
+      canvas {
+        border: 1px solid black;
+        cursor: crosshair;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas width="500" height="500" id="canvas"></canvas>
+
+    <script>
+      // === КЛАС КНОПКИ ДЛЯ CANVAS ===
+      class CanvasButton {
+        constructor(options) {
+          this.x = options.x || 0;
+          this.y = options.y || 0;
+          this.width = options.width || 120;
+          this.height = options.height || 40;
+          this.text = options.text || "Button";
+          this.normalColor = options.normalColor || "#2a9d8f";
+          this.hoverColor = options.hoverColor || "#1d6f65";
+          this.textColor = options.textColor || "#ffffff";
+          this.font = options.font || "bold 14px sans-serif";
+          this.onClick = options.onClick || function () {};
+        }
+
+        // Перевірка, чи знаходяться координати всередині кнопки
+        isMouseOver(mouseX, mouseY) {
+          return (
+            mouseX >= this.x &&
+            mouseX <= this.x + this.width &&
+            mouseY >= this.y &&
+            mouseY <= this.y + this.height
+          );
+        }
+
+        // Малювання кнопки на контексті канвасу
+        draw(ctx, mouseX, mouseY, mouseLeave) {
+          const isHovered = !mouseLeave && this.isMouseOver(mouseX, mouseY);
+
+          // Малюємо фон кнопки
+          ctx.fillStyle = isHovered ? this.hoverColor : this.normalColor;
+          ctx.fillRect(this.x, this.y, this.width, this.height);
+
+          // Малюємо текст
+          ctx.fillStyle = this.textColor;
+          ctx.font = this.font;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(
+            this.text,
+            this.x + this.width / 2,
+            this.y + this.height / 2,
+          );
+        }
+
+        // Виклик події кліку
+        click() {
+          this.onClick();
+        }
+      }
+
+      // === ОСНОВНИЙ КОД С КРИПТУ ===
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      let pressed = false;
+      let mouseLeave = true;
+      let mouse = { x: 0, y: 0 };
+      let circleRadius = 10;
+
+      const colors = [
+        "#1e1e24",
+        "#2a9d8f",
+        "#e76f51",
+        "#f4a261",
+        "#e9c46a",
+        "#264653",
+        "#a8dadc",
+        "#457b9d",
+        "#1d3557",
+        "#e63946",
+        "#8ecae6",
+        "#219ebc",
+        "#023047",
+        "#ffb703",
+        "#fb8500",
+        "#6c5ce7",
+        "#a29bfe",
+        "#fd79a8",
+        "#00b894",
+        "#0984e3",
+      ];
+
+      let currentColor = getRandomColor();
+      const points = [];
+      let currentLayer = null;
+
+      // Ініціалізація кнопки через створений клас
+      const saveButton = new CanvasButton({
+        x: 330,
+        y: 20,
+        width: 150,
+        height: 40,
+        text: "Зберегти як PNG",
+        normalColor: "#2a9d8f",
+        hoverColor: "#1d6f65",
+        onClick: saveCanvasAsPNG, // Передаємо функцію збереження як колбек
+      });
+
+      function updateMouseCoordinates(event) {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = event.clientX - rect.left;
+        mouse.y = event.clientY - rect.top;
+      }
+
+      canvas.addEventListener("mousedown", (event) => {
+        updateMouseCoordinates(event);
+
+        // Використовуємо метод класу для перевірки кліку
+        if (saveButton.isMouseOver(mouse.x, mouse.y)) {
+          saveButton.click();
+          return;
+        }
+
+        pressed = true;
+        mouseLeave = false;
+
+        if (currentLayer === null) {
+          currentLayer = 0;
+        } else {
+          currentLayer++;
+        }
+        pushPoint();
+      });
+
+      window.addEventListener("mouseup", () => {
+        pressed = false;
+        currentColor = getRandomColor();
+      });
+
+      canvas.addEventListener("mouseenter", () => {
+        mouseLeave = false;
+      });
+
+      canvas.addEventListener("mouseleave", () => {
+        mouseLeave = true;
+      });
+
+      canvas.addEventListener("mousemove", (event) => {
+        mouseLeave = false;
+        updateMouseCoordinates(event);
+
+        // Забороняємо малювати, якщо миша повзе по кнопці
+        if (pressed && !saveButton.isMouseOver(mouse.x, mouse.y)) {
+          pushPoint();
+        }
+      });
+
+      function pushPoint() {
+        const point = { x: mouse.x, y: mouse.y };
+        if (!points[currentLayer]) {
+          points[currentLayer] = {
+            color: currentColor,
+            data: [],
+          };
+        }
+        points[currentLayer].data.push(point);
+      }
+
+      function drawPoints() {
+        points.forEach((layer) => {
+          if (!layer) return;
+          ctx.fillStyle = layer.color;
+          ctx.beginPath();
+          layer.data.forEach((point) => {
+            ctx.moveTo(point.x + circleRadius, point.y);
+            ctx.arc(point.x, point.y, circleRadius, 0, 2 * Math.PI);
+          });
+          ctx.fill();
+        });
+      }
+
+      function drawCircleCursor() {
+        ctx.fillStyle = currentColor;
+        // Робимо курсор прозорим над кнопкою, використовуючи метод класу
+        ctx.globalAlpha = saveButton.isMouseOver(mouse.x, mouse.y) ? 0.3 : 1.0;
+
+        ctx.beginPath();
+        ctx.arc(mouse.x, mouse.y, circleRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+      }
+
+      function getRandomColor() {
+        const idx = Math.floor(Math.random() * colors.length);
+        return colors[idx];
+      }
+
+      function saveCanvasAsPNG() {
+        // Тимчасово очищуємо інтерфейс для чистого знімку
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawPoints();
+
+        const link = document.createElement("a");
+        link.download = "my-canvas-drawing.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }
+
+      // Анімаційний цикл рендерингу
+      (function drawFrame() {
+        window.requestAnimationFrame(drawFrame);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        drawPoints();
+
+        // Викликаємо метод рендеру кнопки з класу
+        saveButton.draw(ctx, mouse.x, mouse.y, mouseLeave);
+
+        if (!mouseLeave) {
+          drawCircleCursor();
+        }
+      })();
+    </script>
+  </body>
+</html>
