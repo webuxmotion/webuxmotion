@@ -12,6 +12,9 @@ window.onload = function () {
   let previousTime = 0;
 
   let bezierCurvePoints = [];
+  let bezierCurvePoints2 = [];
+  let bPoints = [];
+  let bPoints2 = [];
 
   const points = [
     new Point({
@@ -37,12 +40,14 @@ window.onload = function () {
     }),
   ];
 
-
   let selectedPoint = null;
   const offset = { x: 0, y: 0 };
 
   function updatePoints(delta) {
     bezierCurvePoints = [];
+    bezierCurvePoints2 = [];
+    bPoints = [];
+    bPoints2 = [];
 
     if (!mouse.isDown) {
       selectedPoint = null;
@@ -69,6 +74,28 @@ window.onload = function () {
       point.index = index;
       point.update(delta);
     });
+
+    bezierCurvePoints2 = utils.getAdaptiveBezierPath(
+      points[0],
+      points[1],
+      points[2],
+      4,
+    );
+
+    bezierCurvePoints = utils.getBezierPath(
+      points[0],
+      points[1],
+      points[2],
+      bezierCurvePoints2.length,
+    );
+
+    bezierCurvePoints.forEach((point) => {
+      bPoints.push(new Point({ point, color: colors[9], steps: 3, radius: 4 }).update(delta));
+    });
+
+    bezierCurvePoints2.forEach((point) => {
+      bPoints2.push(new Point({ point, color: colors[9], steps: 3, radius: 4 }).update(delta));
+    });
   }
 
   function drawPoints() {
@@ -76,7 +103,17 @@ window.onload = function () {
       point.draw(ctx);
     });
 
-    utils.drawLineFromPoints(ctx, bezierCurvePoints);
+    if (mouse.isDown) {
+      utils.drawLineFromPoints(ctx, bezierCurvePoints2);
+      bPoints2.forEach((point) => {
+        point.draw(ctx);
+      });
+    } else {
+      utils.drawLineFromPoints(ctx, bezierCurvePoints);
+      bPoints.forEach((point) => {
+        point.draw(ctx);
+      });
+    }
   }
 
   function draw(currentTime) {

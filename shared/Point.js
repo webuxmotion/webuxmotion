@@ -29,6 +29,8 @@ export default class Point {
 
       this.circlePathPoints.push(p);
     }
+
+    return this;
   }
 
   draw(ctx) {

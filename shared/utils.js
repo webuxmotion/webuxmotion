@@ -58,20 +58,55 @@ const utils = {
   },
 
   getBezierPoint(p0, p1, p2, t) {
-    const q0x = lerp(p0.x, p1.x, t);
-    const q0y = lerp(p0.y, p1.y, t);
+    const q0x = this.lerp(p0.x, p1.x, t);
+    const q0y = this.lerp(p0.y, p1.y, t);
 
-    const q1x = lerp(p1.x, p2.x, t);
-    const q1y = lerp(p1.y, p2.y, t);
+    const q1x = this.lerp(p1.x, p2.x, t);
+    const q1y = this.lerp(p1.y, p2.y, t);
 
-    const x = lerp(q0x, q1x, t);
-    const y = lerp(q0y, q1y, t);
+    const x = this.lerp(q0x, q1x, t);
+    const y = this.lerp(q0y, q1y, t);
 
     return { x: x, y: y };
   },
 
+  getBezierPath(p0, p1, p2, steps) {
+    const points = [];
+    
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      points.push(this.getBezierPoint(p0, p1, p2, t));
+    }
+    
+    return points;
+  },
+
+  getAdaptiveBezierPath(p0, p1, p2, tolerance = 2) {
+    const points = [p0];
+    const lerp = this.lerp;
+
+    function subdivide(a, b, c) {
+      const area = Math.abs((c.y - a.y) * b.x - (c.x - a.x) * b.y + c.x * a.y - c.y * a.x);
+      const bottom = Math.hypot(c.x - a.x, c.y - a.y);
+      const distance = bottom === 0 ? 0 : area / bottom;
+
+      if (distance > tolerance) {
+        const q0 = { x: lerp(a.x, b.x, 0.5), y: lerp(a.y, b.y, 0.5) };
+        const q1 = { x: lerp(b.x, c.x, 0.5), y: lerp(b.y, c.y, 0.5) };
+        const m = { x: lerp(q0.x, q1.x, 0.5), y: lerp(q0.y, q1.y, 0.5) };
+
+        subdivide(a, q0, m);
+        subdivide(m, q1, c);
+      } else {
+        points.push(c);
+      }
+    }
+
+    subdivide(p0, p1, p2);
+    return points;
+  },
+
   drawLineFromPoints(ctx, curvePoints) {
-    // Якщо точок немає, або вона всього одна — малювати нічого
     if (!curvePoints || curvePoints.length < 2) return;
 
     ctx.beginPath();
@@ -84,7 +119,6 @@ const utils = {
       }
     });
 
-    // Малюємо всю лінію один раз після завершення циклу
     ctx.stroke();
   },
 
