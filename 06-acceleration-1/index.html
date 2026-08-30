@@ -1,0 +1,48 @@
+<body>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
+  <canvas width="500" height="500"></canvas>
+
+  <script>
+    const canvas = document.querySelector("canvas");
+    const ctx = canvas.getContext("2d");
+    let prevTime = 0;
+
+    let vx = 0;
+    let ax = 50;
+    let x = 0;
+    let y = 0;
+    let size = 10;
+
+    function draw(time) {
+      requestAnimationFrame(draw);
+      const delta = Math.min((time - prevTime) / 1000, 0.1);
+      prevTime = time;
+
+      vx += ax * delta;
+      x += vx;
+
+      if (x > canvas.width) {
+        x = 0;
+        y += size;
+      }
+
+      if (y > canvas.height) {
+        y = 0;
+        vx = 0;
+        ax -= 5;
+      }
+
+      if (ax < 5) ax += 5;
+      
+
+      ctx.beginPath();
+      ctx.fillRect(x, y, size, size);
+    }
+
+    requestAnimationFrame(draw);
+  </script>
+</body>

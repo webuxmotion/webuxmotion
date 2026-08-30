@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <title>01-velocity-1</title>
+    <style>
+      canvas {
+        border: 1px dashed;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <script type="module">
+      import Arrow from "../shared/Arrow.js";
+      import utils from "../shared/utils.js";
+
+      window.onload = function () {
+        let prevTime = 0;
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const arrow = new Arrow();
+        const mouse = utils.captureMouse(canvas);
+        const speed = 100;
+
+        function draw(time) {
+          requestAnimationFrame(draw);
+          const delta = Math.min((time - prevTime) / 1000, 0.1);
+          prevTime = time;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          const dx = mouse.x - arrow.x;
+          const dy = mouse.y - arrow.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(dy, dx);
+
+          arrow.rotation = angle;
+
+          if (distance > 2) {
+            const vx = Math.cos(angle) * speed * delta;
+            const vy = Math.sin(angle) * speed * delta;
+            arrow.x += vx;
+            arrow.y += vy;
+          }
+
+          arrow.draw(ctx);
+        }
+        requestAnimationFrame(draw);
+      };
+    </script>
+  </body>
+</html>
