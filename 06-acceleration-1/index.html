@@ -12,36 +12,52 @@
     let prevTime = 0;
 
     let vx = 0;
-    let ax = 50;
+    let vy = 0;
+    let ax = 5;
+    let ay = 5;
     let x = 0;
     let y = 0;
     let size = 10;
+
+    const keysPressed = {};
 
     function draw(time) {
       requestAnimationFrame(draw);
       const delta = Math.min((time - prevTime) / 1000, 0.1);
       prevTime = time;
-
-      vx += ax * delta;
-      x += vx;
-
-      if (x > canvas.width) {
-        x = 0;
-        y += size;
-      }
-
-      if (y > canvas.height) {
-        y = 0;
-        vx = 0;
-        ax -= 5;
-      }
-
-      if (ax < 5) ax += 5;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       
+      if (keysPressed.ArrowUp) {
+        vy -= ay * delta;
+      }
 
+      if (keysPressed.ArrowDown) {
+        vy += ay * delta;
+      }
+
+      if (keysPressed.ArrowLeft) {
+        vx -= ax * delta;
+      }
+
+      if (keysPressed.ArrowRight) {
+        vx += ax * delta;
+      }
+
+      x += vx;
+      y += vy;
+      
       ctx.beginPath();
       ctx.fillRect(x, y, size, size);
     }
+
+    document.addEventListener('keydown', (event) => {
+      keysPressed[event.code] = true;
+    });
+
+    document.addEventListener('keyup', (event) => {
+      keysPressed[event.code] = false;
+    });
+
 
     requestAnimationFrame(draw);
   </script>
